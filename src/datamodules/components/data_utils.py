@@ -6,7 +6,7 @@ from os import listdir
 from os.path import join
 from random import random, randint, choice, uniform
 from PIL import Image, ImageOps, ImageFilter
-from RandAugment import RandAugment
+from randaugment import RandAugment
 
 import numpy as np
 import numbers
@@ -43,7 +43,7 @@ def find_frames(video):
     frames = [
         join(video, f)
         for f in sorted(
-            listdir(video), key=lambda x: int(x.split("_")[1].split(".")[0])
+            listdir(video), key=lambda x: int(x.split(".")[0])
         )
         if is_img(f)
     ]
@@ -106,9 +106,9 @@ class VideoRecord(object):
     @property
     def path(self):
         if self.daily_da or self.hmdb_ucf or self.sports_da:
-            res = self._data[-1]
+            res = join(self.data_folder, self._data[-1])
         elif self.data_folder is not None:
-            res = join(self.data_folder, self._data[0])
+            res = join(self.data_folder, self._data[-1])
         else:
             res = self._data[0]
 
@@ -120,7 +120,7 @@ class VideoRecord(object):
             return int(self._data[2]) - int(self._data[1]) - 1
         else:
             if self.data_folder is not None:
-                path = join(self.data_folder, self._data[0])
+                path = join(self.data_folder, self._data[-1])
             else:
                 if self.daily_da or self.hmdb_ucf or self.sports_da:
                     path = self._data[-1]

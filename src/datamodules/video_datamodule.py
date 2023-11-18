@@ -42,6 +42,7 @@ class VideoDataModule(LightningDataModule):
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False)
         self.classes_limit = classes_limit
+        self.domain_shift = domain_shift
 
         # data transformations
         self.transform_train = get_augmentation(True, self.hparams)
@@ -65,6 +66,12 @@ class VideoDataModule(LightningDataModule):
             else self.num_classes,
         }
 
+        root_path = f'/nfs/ofs-902-1/object-detection/jiangjing/datasets/UCF-HMDB-full-freames'
+        src_domain = self.hparams.source_train_file.split('/')[-1].split('_')[0]
+        tgt_domain = self.hparams.target_train_file.split('/')[-1].split('_')[0]
+        self.src_data_folder = f'{root_path}/{src_domain}'
+        self.tgt_data_folder = f'{root_path}/{tgt_domain}'
+
     @property
     def num_classes(self):
         res = len(get_classes(dict(self.hparams)))
@@ -82,15 +89,14 @@ class VideoDataModule(LightningDataModule):
             and not self.data_train_target
             and not self.data_val
         ):
-
             if self.domain_shift:
-
                 self.data_train_source = VideoDataset(
                     self.hparams.source_train_file,
                     num_segments=self.hparams.num_segments,
                     random_shift=self.hparams.random_shift,
                     transform=self.transform_train,
                     extra_args=self.extra_args,
+                    data_folder=self.src_data_folder
                 )
 
                 self.data_train_target = VideoDataset(
@@ -99,6 +105,7 @@ class VideoDataModule(LightningDataModule):
                     random_shift=self.hparams.random_shift,
                     transform=self.transform_train,
                     extra_args=self.extra_args,
+                    data_folder=self.tgt_data_folder
                 )
 
                 self.data_train = VideoDatasetSourceAndTarget(
@@ -112,7 +119,7 @@ class VideoDataModule(LightningDataModule):
                     random_shift=self.hparams.random_shift,
                     transform=self.transform_train,
                     extra_args=self.extra_args,
-                    data_folder=self.hparams.data_folder,
+                    data_folder=self.src_data_folder
                 )
 
             if self.hparams.prototype_extraction or self.hparams.subtasks_analysis:
@@ -122,6 +129,7 @@ class VideoDataModule(LightningDataModule):
                     random_shift=self.hparams.random_shift,
                     transform=self.transform_train,
                     extra_args=self.extra_args,
+                    data_folder=self.src_data_folder
                 )
             else:
                 self.data_val = VideoDataset(
@@ -130,7 +138,7 @@ class VideoDataModule(LightningDataModule):
                     num_segments=self.hparams.num_segments,
                     transform=self.transform_val,
                     extra_args=self.extra_args,
-                    data_folder=self.hparams.data_folder,
+                    data_folder=self.tgt_data_folder
                 )
 
     def train_dataloader(self):
@@ -169,6 +177,7 @@ class VideoDataModule(LightningDataModule):
             random_shift=self.hparams.random_shift,
             transform=self.transform_val,
             extra_args=self.extra_args,
+            data_folder=self.tgt_data_folder
         )
         return DataLoader(
             dataset=predict_dataset,

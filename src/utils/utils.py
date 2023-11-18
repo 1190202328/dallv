@@ -281,7 +281,7 @@ def process_run_name(config, test=False, im2vid=False):
         "TRAIN" if not test else "TEST",
         config.tags[0] if len(list(config.tags)) else "exp",
         uname().nodename,
-        "{}_split_{}".format(config.datamodule.dataset, config.datamodule.split)
+        "{}".format(config.datamodule.dataset)
         if im2vid
         else config.datamodule.dataset,
         "CDA",

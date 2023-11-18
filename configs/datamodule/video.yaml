@@ -9,3 +9,5 @@ randaug:
 workers: 8
 pin_memory: False
 classes_limit: 0
+domain_shift: True
+im2vid: True
