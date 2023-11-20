@@ -532,6 +532,11 @@ class VideoModel(pl.LightningModule):
         return loss
 
     def training_step_normal(self, train_batch):
+        """
+        TODO 主要训练流程！
+        :param train_batch:
+        :return:
+        """
 
         if self.hparams.domain_shift:
             (
